@@ -27,7 +27,7 @@
       "default": "https://camofox-telemetry.askjo.workers.dev/report"
     },
     "CAMOUFOX_EXECUTABLE": {
-      "description": "External Camoufox executable to use instead of downloading the bundled browser. Compatibility aliases: CAMOUFOX_EXECUTABLE_PATH, CAMOFOX_EXECUTABLE_PATH.",
+      "description": "External Camoufox executable to use instead of downloading the bundled browser. Compatibility aliases: CAMOUFOX_EXECUTABLE_PATH, CAMOFOX_EXECUTABLE, CAMOFOX_EXECUTABLE_PATH.",
       "required": false,
       "sensitive": false
     }
