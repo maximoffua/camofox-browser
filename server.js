@@ -589,7 +589,7 @@ function isFatalInstallError(err) {
 
 function camoufoxInstallRemediation() {
   if (CONFIG.camoufoxExecutablePath) {
-    return 'verify CAMOUFOX_EXECUTABLE points to a Camoufox bundle with properties.json, version.json, and fontconfig/';
+    return 'verify CAMOUFOX_EXECUTABLE points to a Camoufox bundle with properties.json and version.json';
   }
   return 'run `npx camoufox-js fetch` then restart the server';
 }

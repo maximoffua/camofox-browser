@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from '@jest/globals';
-import { chmodSync, existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { chmodSync, existsSync, mkdtempSync, mkdirSync, realpathSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { prepareExternalCamoufoxExecutable } from '../../lib/camoufox-executable.js';
@@ -59,6 +59,32 @@ describe('prepareExternalCamoufoxExecutable', () => {
     expect(existsSync(join(cacheDir, 'version.json'))).toBe(true);
     expect(existsSync(join(cacheDir, 'properties.json'))).toBe(true);
     expect(existsSync(join(cacheDir, 'camoufox-bin'))).toBe(true);
+  });
+
+  test('refreshes camoufox-js cache when executable changes', () => {
+    const cacheDir = makeTempDir();
+    const bundleA = makeTempDir();
+    const bundleB = makeTempDir();
+
+    for (const [bundleDir, version] of [[bundleA, '135.0.1'], [bundleB, '136.0.1']]) {
+      const executable = join(bundleDir, 'camoufox-bin');
+      writeFileSync(executable, `#!/bin/sh\necho ${version}\n`);
+      chmodSync(executable, 0o755);
+      writeFileSync(join(bundleDir, 'properties.json'), `[{"version":"${version}"}]\n`);
+      writeFileSync(join(bundleDir, 'version.json'), `{"version":"${version}","release":"beta.24"}\n`);
+      mkdirSync(join(bundleDir, 'fontconfig', 'lin'), { recursive: true });
+    }
+
+    const executableA = join(bundleA, 'camoufox-bin');
+    const executableB = join(bundleB, 'camoufox-bin');
+
+    prepareExternalCamoufoxExecutable(executableA, { cacheDir });
+    expect(realpathSync(join(cacheDir, 'camoufox-bin'))).toBe(realpathSync(executableA));
+
+    prepareExternalCamoufoxExecutable(executableB, { cacheDir });
+    expect(realpathSync(join(cacheDir, 'camoufox-bin'))).toBe(realpathSync(executableB));
+    expect(realpathSync(join(cacheDir, 'properties.json'))).toBe(realpathSync(join(bundleB, 'properties.json')));
+    expect(realpathSync(join(cacheDir, 'version.json'))).toBe(realpathSync(join(bundleB, 'version.json')));
   });
 
   test('fails clearly when bundle resources are missing', () => {
