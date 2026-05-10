@@ -42,6 +42,25 @@ describe('prepareExternalCamoufoxExecutable', () => {
     expect(existsSync(join(cacheDir, 'camoufox-bin'))).toBe(true);
   });
 
+  test('accepts Nix-style external bundle without fontconfig', () => {
+    const bundleDir = makeTempDir();
+    const cacheDir = makeTempDir();
+    const executable = join(bundleDir, 'camoufox-bin');
+
+    writeFileSync(executable, '#!/bin/sh\nexit 0\n');
+    chmodSync(executable, 0o755);
+    writeFileSync(join(bundleDir, 'properties.json'), '[]\n');
+    writeFileSync(join(bundleDir, 'version.json'), '{"version":"135.0.1","release":"beta.24"}\n');
+
+    const prepared = prepareExternalCamoufoxExecutable(executable, { cacheDir });
+
+    expect(prepared.resourceDir).toBe(bundleDir);
+    expect(existsSync(join(cacheDir, 'fontconfig'))).toBe(false);
+    expect(existsSync(join(cacheDir, 'version.json'))).toBe(true);
+    expect(existsSync(join(cacheDir, 'properties.json'))).toBe(true);
+    expect(existsSync(join(cacheDir, 'camoufox-bin'))).toBe(true);
+  });
+
   test('fails clearly when bundle resources are missing', () => {
     const bundleDir = makeTempDir();
     const executable = join(bundleDir, 'camoufox-bin');
